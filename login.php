@@ -1,5 +1,10 @@
 <?php
-session_start();
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
+
+if (session_status() == PHP_SESSION_NONE) {
+    session_start();
+}
 include 'db.php';
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
@@ -12,19 +17,32 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $result = $stmt->get_result();
     $user = $result->fetch_assoc();
 
-    if ($user && password_verify($password, $user['password'])) {
+    if ($user && $password === $user['password']) {
         $_SESSION['username'] = $username;
         $_SESSION['role'] = $user['role'];
         setcookie('username', $username, time() + (86400 * 30), "/");
-        header('Location: index.php');
+        header('Location: upload.php');
         exit;
     } else {
-        echo "Invalid credentials";
+        $error = "try again";
     }
 }
 ?>
-<form method="post">
-    Username: <input type="text" name="username" required><br>
-    Password: <input type="password" name="password" required><br>
-    <button type="submit">Login</button>
-</form>
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Login</title>
+</head>
+<body>
+    <h1>Login</h1>
+    <?php if (isset($error)) { echo '<p>' . $error . '</p>'; } ?>
+    <form method="post">
+        <input type="text" name="username" placeholder="Username" required><br>
+        <input type="password" name="password" placeholder="Password" required><br>
+        <button type="submit">Login</button>
+    </form>
+</body>
+</html>
+
+
